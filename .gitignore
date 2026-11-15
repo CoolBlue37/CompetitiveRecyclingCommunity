@@ -1,0 +1,6 @@
+venv/
+data_all/
+data/
+RealWaste/
+__pycache__/
+*.zip
