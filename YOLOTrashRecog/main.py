@@ -1,7 +1,7 @@
 from ultralytics import YOLO
 
 def main():
-    model = YOLO("runs/classify/train/weights/best.pt")
+    model = YOLO("runs/classify/train-4/weights/best.pt")
     results = model.predict(source=0, show=True, verbose=True)
     # print(results)
 

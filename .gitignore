@@ -2,5 +2,6 @@ venv/
 data_all/
 data/
 RealWaste/
+runs/
 __pycache__/
 *.zip
