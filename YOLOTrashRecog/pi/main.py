@@ -6,12 +6,14 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from gpiozero import AngularServo
 from gpiozero import LED, Button
 import numpy as np
+from signal import pause
 
 import cv2
 from ultralytics import YOLO
 
 latest = None
 lock = threading.Lock()
+run_lock = threading.Lock()
 model = YOLO("/home/tanush/yolo/best_ncnn_model", task="classify")
 IMGSZ=224
 
@@ -23,7 +25,7 @@ cam = subprocess.Popen(
     [
         "rpicam-vid", "-t", "0", "-n",
         "--mode", "1296:972:10:P",
-        "--width", "640", "--height", "480", "--framerate", "10",
+        "--width", "640", "--height", "480", "--framerate", "60",
         "--codec", "libav", "--libav-format", "mpegts",
         "-o", STREAM + "?listen=1",
     ],
@@ -43,28 +45,15 @@ if cap is None or not cap.isOpened():
 print("Camera connected.")
 
 def reader():
-    global latest
+    global latest, frame_id
     while True:
         ok, frame = cap.read()
         if ok:
             with lock:
                 latest = frame
+                frame_id += 1
         else:
-            time.sleep(0.05)
-
-threading.Thread(target=reader, daemon=True).start()
-
-def infer():
-    global jpeg
-    with lock:
-        frame = None if latest is None else latest.copy()
-    if frame is None:
-        time.sleep(0.05)
-        return
-
-    r = model.predict(frame, imgsz=IMGSZ, verbose=False)[0]
-
-    return r
+            time.sleep(0.01)
 
 
 B1 = Button(0)
@@ -77,7 +66,6 @@ LGr = LED(8)
 LRe = LED(9)
 Srvo = 1
 
-# Adjust min/max pulse widths to match your servo's datasheet
 servo = AngularServo(Srvo, min_angle=-90, max_angle=90)
 
 servo.angle = 0
@@ -109,32 +97,55 @@ def APIstuff(gr):
     pass
 
 def run(gr):
-    all_probs = []
-    for _ in range(n):
-       r = infer()
-       all_probs.append(r.probs.data.cpu().numpy())
+    if not run_lock.acquire(blocking=False):
+        return
 
-    mean = np.mean(all_probs, axis=0)     # average per class
-    idx = int(mean.argmax())
+    try:
+        all_probs = []
+        last_seen = -1
 
-    trueRecycle = idx in toRecycle
+        while len(all_probs) < n:
+            with lock:
+                if latest is None or frame_id == last_seen:
+                    frame = None
+                else:
+                    frame = latest.copy()
+                    last_seen = frame_id
 
-    if trueRecycle == recycle: LGr.on()
-    else: LRe.on()
+            if frame is None:
+                time.sleep(0.01)
+                continue
 
-    if trueRecycle:
-        servo.angle = 90
-    else:
-        servo.angle = -90
+            r = model.predict(frame, imgsz=IMGSZ, verbose=False)[0]
+            all_probs.append(r.probs.data.cpu().numpy())
 
-    sleep(4)
+        mean = np.mean(all_probs, axis=0)
+        idx = int(mean.argmax())
+        trueRecycle = idx in toRecycle
 
-    servo.angle = 0
-    sleep(1)
+        if trueRecycle == recycle:
+            LGr.on()
+        else:
+            LRe.on()
 
-    LGr.off()
-    LRe.off()
+        if trueRecycle: servo.angle=90
+        else: servo.angle=-90
+        sleep(4)
 
+        servo.angle = 0
+        sleep(1)
 
+        LGr.off()
+        LRe.off()
+    finally:
+        run_lock.release()
 
-
+try:
+    print("System ready.")
+    pause()
+except KeyboardInterrupt:
+    print("\nShutting down...")
+finally:
+    cap.release()
+    cam.terminate()
+    servo.close()
