@@ -4,7 +4,6 @@ import time
 from time import sleep
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from gpiozero import AngularServo
-from gpiozero.pins.pigpio import PiGPIOFactory
 from gpiozero import LED, Button
 import numpy as np
 
@@ -78,19 +77,10 @@ LGr = LED(8)
 LRe = LED(9)
 Srvo = 1
 
-factory = PiGPIOFactory()
-
 # Adjust min/max pulse widths to match your servo's datasheet
-servo = AngularServo(
-    18, 
-    min_angle=0, 
-    max_angle=180, 
-    min_pulse_width=0.0005, 
-    max_pulse_width=0.0025, 
-    pin_factory=factory
-)
+servo = AngularServo(Srvo, min_angle=-90, max_angle=90)
 
-servo.angle = 90
+servo.angle = 0
 sleep(1)
 
 recycle = 0
@@ -133,13 +123,13 @@ def run(gr):
     else: LRe.on()
 
     if trueRecycle:
-        servo.angle = 180
+        servo.angle = 90
     else:
-        servo.angle = 0
+        servo.angle = -90
 
     sleep(4)
 
-    servo.angle = 90
+    servo.angle = 0
     sleep(1)
 
     LGr.off()
