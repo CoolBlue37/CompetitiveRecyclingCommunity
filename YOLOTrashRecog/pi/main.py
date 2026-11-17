@@ -2,59 +2,81 @@ import subprocess
 import threading
 import time
 from time import sleep
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from gpiozero import AngularServo
-from gpiozero import LED, Button
+from gpiozero import AngularServo, LED, Button
 import numpy as np
 from signal import pause
 
 import cv2
 from ultralytics import YOLO
 
+model = YOLO("/home/tanush/yolo/best_ncnn_model", task="classify")
+IMGSZ = 224
+
+W, H, FPS = 640, 480, 30          
+FRAME_BYTES = W * H * 3 // 2      
+LOG = "/tmp/rpicam.log"
+
 latest = None
+frame_id = 0          
 lock = threading.Lock()
 run_lock = threading.Lock()
-model = YOLO("/home/tanush/yolo/best_ncnn_model", task="classify")
-IMGSZ=224
-
-PORT = 8000
-STREAM = "tcp://127.0.0.1:8888"
 
 print("Starting camera...")
+log = open(LOG, "w")
 cam = subprocess.Popen(
     [
         "rpicam-vid", "-t", "0", "-n",
         "--mode", "1296:972:10:P",
-        "--width", "640", "--height", "480", "--framerate", "60",
-        "--codec", "libav", "--libav-format", "mpegts",
-        "-o", STREAM + "?listen=1",
+        "--width", str(W), "--height", str(H), "--framerate", str(FPS),
+        "--codec", "yuv420",
+        "-o", "-",          
     ],
-    stdout=subprocess.DEVNULL,
-    stderr=subprocess.DEVNULL,
+    stdout=subprocess.PIPE,
+    stderr=log,   
+    bufsize=0,
 )
 
-cap = None
-for _ in range(20):
-    time.sleep(1)
-    cap = cv2.VideoCapture(STREAM)
-    if cap.isOpened():
-        break
-if cap is None or not cap.isOpened():
-    cam.terminate()
-    raise SystemExit("Could not connect to the camera. Is another camera command still running?")
-print("Camera connected.")
+
+def read_exact(n):
+    buf = bytearray()
+    while len(buf) < n:
+        chunk = cam.stdout.read(n - len(buf))
+        if not chunk:
+            return None
+        buf += chunk
+    return bytes(buf)
+
 
 def reader():
     global latest, frame_id
     while True:
-        ok, frame = cap.read()
-        if ok:
-            with lock:
-                latest = frame
-                frame_id += 1
-        else:
-            time.sleep(0.01)
+        raw = read_exact(FRAME_BYTES)
+        if raw is None:
+            print("Camera stream ended.")
+            break
+        yuv = np.frombuffer(raw, np.uint8).reshape(H * 3 // 2, W)
+        bgr = cv2.cvtColor(yuv, cv2.COLOR_YUV2BGR_I420)
+        with lock:
+            latest = bgr
+            frame_id += 1
 
+
+threading.Thread(target=reader, daemon=True).start()   
+
+for _ in range(100):
+    if latest is not None:
+        break
+    if cam.poll() is not None:
+        break
+    time.sleep(0.1)
+
+if latest is None:
+    cam.terminate()
+    log.close()
+    print("Could not get frames from the camera. rpicam-vid said:\n")
+    print(open(LOG).read()[-2000:])
+    raise SystemExit(1)
+print("Camera connected.")
 
 B1 = Button(17, bounce_time=0.05)
 B2 = Button(27, bounce_time=0.05)
@@ -64,81 +86,75 @@ Bre = Button(6, bounce_time=0.05)
 Btr = Button(13, bounce_time=0.05)
 LGr = LED(23)
 LRe = LED(24)
-Srvo = 18
 
-servo = AngularServo(Srvo, min_angle=-90, max_angle=90)
-
+servo = AngularServo(18, min_angle=-90, max_angle=90)
 servo.angle = 0
 sleep(1)
 
 recycle = False
+toRecycle = [0, 1, 2, 4, 5]
+n = 10
 
-toRecycle=[0, 1, 2, 4, 5]
 
 def setRecycle():
     global recycle
     recycle = True
 
+
 def setTrash():
     global recycle
     recycle = False
 
-Bre.when_released = setRecycle
-Btr.when_released = setTrash
-
-B1.when_released = lambda: run(0)
-B2.when_released = lambda: run(1)
-B3.when_released = lambda: run(2)
-B4.when_released = lambda: run(3)
-
-n = 10
 
 def APIstuff(gr):
     pass
 
+
 def run(gr):
     if not run_lock.acquire(blocking=False):
         return
+    try:
+        all_probs = []
+        last_seen = -1
+        deadline = time.time() + 10
 
-    
-    all_probs = []
-    last_seen = -1
+        while len(all_probs) < n:
+            if time.time() > deadline:
+                print("Timed out waiting for frames.")
+                return
+            with lock:
+                if latest is None or frame_id == last_seen:
+                    frame = None
+                else:
+                    frame = latest.copy()
+                    last_seen = frame_id
+            if frame is None:
+                time.sleep(0.01)
+                continue
+            r = model.predict(frame, imgsz=IMGSZ, verbose=False)[0]
+            all_probs.append(r.probs.data.cpu().numpy())
 
-    while len(all_probs) < n:
-        with lock:
-            if latest is None or frame_id == last_seen:
-                frame = None
-            else:
-                frame = latest.copy()
-                last_seen = frame_id
+        mean = np.mean(all_probs, axis=0)
+        idx = int(mean.argmax())
+        trueRecycle = idx in toRecycle
 
-        if frame is None:
-            time.sleep(0.01)
-            continue
+        (LGr if trueRecycle == recycle else LRe).on()
+        servo.angle = 90 if trueRecycle else -90
+        sleep(4)
+        servo.angle = 0
+        sleep(1)
+        LGr.off()
+        LRe.off()
+    finally:
+        run_lock.release()
 
-        r = model.predict(frame, imgsz=IMGSZ, verbose=False)[0]
-        all_probs.append(r.probs.data.cpu().numpy())
 
-    mean = np.mean(all_probs, axis=0)
-    idx = int(mean.argmax())
-    trueRecycle = idx in toRecycle
-
-    if trueRecycle == recycle:
-        LGr.on()
-    else:
-        LRe.on()
-
-    if trueRecycle: servo.angle=90
-    else: servo.angle=-90
-    sleep(4)
-
-    servo.angle = 0
-    sleep(1)
-
-    LGr.off()
-    LRe.off()
-        
-    run_lock.release()
+Bre.when_released = setRecycle
+Btr.when_released = setTrash
+B1.when_released = lambda: run(0)
+B2.when_released = lambda: run(1)
+B3.when_released = lambda: run(2)
+B4.when_released = lambda: run(3)
 
 try:
     print("System ready.")
@@ -146,6 +162,6 @@ try:
 except KeyboardInterrupt:
     print("\nShutting down...")
 finally:
-    cap.release()
     cam.terminate()
+    log.close()
     servo.close()
