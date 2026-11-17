@@ -99,11 +99,13 @@ n = 10
 def setRecycle():
     global recycle
     recycle = True
+    print("Recycling")
 
 
 def setTrash():
     global recycle
     recycle = False
+    print("Trashing")
 
 
 def APIstuff(gr):
@@ -111,6 +113,7 @@ def APIstuff(gr):
 
 
 def run(gr):
+    print("Grade:", gr)
     if not run_lock.acquire(blocking=False):
         return
     try:
@@ -133,6 +136,8 @@ def run(gr):
                 continue
             r = model.predict(frame, imgsz=IMGSZ, verbose=False)[0]
             all_probs.append(r.probs.data.cpu().numpy())
+
+        print("Predictions Complete")
 
         mean = np.mean(all_probs, axis=0)
         idx = int(mean.argmax())
