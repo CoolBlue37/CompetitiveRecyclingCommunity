@@ -12,7 +12,7 @@ from ultralytics import YOLO
 model = YOLO("/home/tanush/yolo/best_ncnn_model", task="classify")
 IMGSZ = 224
 
-W, H, FPS = 640, 480, 30          
+W, H, FPS = 640, 480, 10          
 FRAME_BYTES = W * H * 3 // 2      
 LOG = "/tmp/rpicam.log"
 
@@ -54,10 +54,8 @@ def reader():
         if raw is None:
             print("Camera stream ended.")
             break
-        yuv = np.frombuffer(raw, np.uint8).reshape(H * 3 // 2, W)
-        bgr = cv2.cvtColor(yuv, cv2.COLOR_YUV2BGR_I420)
         with lock:
-            latest = bgr
+            latest = raw
             frame_id += 1
 
 
@@ -77,6 +75,14 @@ if latest is None:
     print(open(LOG).read()[-2000:])
     raise SystemExit(1)
 print("Camera connected.")
+
+def to_bgr(raw):
+    yuv = np.frombuffer(raw, np.uint8).reshape(H * 3 // 2, W)
+    return cv2.cvtColor(yuv, cv2.COLOR_YUV2BGR_I420)
+
+
+print("Warming up model...")
+model.predict(np.zeros((IMGSZ, IMGSZ, 3), np.uint8), imgsz=IMGSZ, verbose=False)
 
 B1 = Button(17, bounce_time=0.05)
 B2 = Button(27, bounce_time=0.05)
@@ -119,22 +125,23 @@ def run(gr):
     try:
         all_probs = []
         last_seen = -1
-        deadline = time.time() + 10
+        last_new = time.time()
 
         while len(all_probs) < n:
-            if time.time() > deadline:
-                print("Timed out waiting for frames.")
+            if time.time() - last_new > 5:
+                print("No new frames for 5 s. Camera alive:", cam.poll() is None)
                 return
             with lock:
                 if latest is None or frame_id == last_seen:
                     frame = None
                 else:
-                    frame = latest.copy()
+                    frame = latest
                     last_seen = frame_id
             if frame is None:
                 time.sleep(0.01)
                 continue
-            r = model.predict(frame, imgsz=IMGSZ, verbose=False)[0]
+            r = model.predict(to_bgr(frame), imgsz=IMGSZ, verbose=False)[0]
+            last_new = time.time()
             all_probs.append(r.probs.data.cpu().numpy())
 
         print("Predictions Complete")
