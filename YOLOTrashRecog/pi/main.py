@@ -71,7 +71,7 @@ servo = AngularServo(Srvo, min_angle=-90, max_angle=90)
 servo.angle = 0
 sleep(1)
 
-recycle = 0
+recycle = False
 
 toRecycle=[0, 1, 2, 4, 5]
 
