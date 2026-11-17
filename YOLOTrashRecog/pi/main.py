@@ -100,45 +100,45 @@ def run(gr):
     if not run_lock.acquire(blocking=False):
         return
 
-    try:
-        all_probs = []
-        last_seen = -1
+    
+    all_probs = []
+    last_seen = -1
 
-        while len(all_probs) < n:
-            with lock:
-                if latest is None or frame_id == last_seen:
-                    frame = None
-                else:
-                    frame = latest.copy()
-                    last_seen = frame_id
+    while len(all_probs) < n:
+        with lock:
+            if latest is None or frame_id == last_seen:
+                frame = None
+            else:
+                frame = latest.copy()
+                last_seen = frame_id
 
-            if frame is None:
-                time.sleep(0.01)
-                continue
+        if frame is None:
+            time.sleep(0.01)
+            continue
 
-            r = model.predict(frame, imgsz=IMGSZ, verbose=False)[0]
-            all_probs.append(r.probs.data.cpu().numpy())
+        r = model.predict(frame, imgsz=IMGSZ, verbose=False)[0]
+        all_probs.append(r.probs.data.cpu().numpy())
 
-        mean = np.mean(all_probs, axis=0)
-        idx = int(mean.argmax())
-        trueRecycle = idx in toRecycle
+    mean = np.mean(all_probs, axis=0)
+    idx = int(mean.argmax())
+    trueRecycle = idx in toRecycle
 
-        if trueRecycle == recycle:
-            LGr.on()
-        else:
-            LRe.on()
+    if trueRecycle == recycle:
+        LGr.on()
+    else:
+        LRe.on()
 
-        if trueRecycle: servo.angle=90
-        else: servo.angle=-90
-        sleep(4)
+    if trueRecycle: servo.angle=90
+    else: servo.angle=-90
+    sleep(4)
 
-        servo.angle = 0
-        sleep(1)
+    servo.angle = 0
+    sleep(1)
 
-        LGr.off()
-        LRe.off()
-    finally:
-        run_lock.release()
+    LGr.off()
+    LRe.off()
+        
+    run_lock.release()
 
 try:
     print("System ready.")
