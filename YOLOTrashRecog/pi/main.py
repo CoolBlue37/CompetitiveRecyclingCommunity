@@ -56,15 +56,15 @@ def reader():
             time.sleep(0.01)
 
 
-B1 = Button(0)
-B2 = Button(2)
-B3 = Button(3)
-B4 = Button(21)
-Bre = Button(6)
-Btr = Button(7)
-LGr = LED(8)
-LRe = LED(9)
-Srvo = 1
+B1 = Button(17, bounce_time=0.05)
+B2 = Button(27, bounce_time=0.05)
+B3 = Button(22, bounce_time=0.05)
+B4 = Button(5, bounce_time=0.05)
+Bre = Button(6, bounce_time=0.05)
+Btr = Button(13, bounce_time=0.05)
+LGr = LED(23)
+LRe = LED(24)
+Srvo = 18
 
 servo = AngularServo(Srvo, min_angle=-90, max_angle=90)
 
