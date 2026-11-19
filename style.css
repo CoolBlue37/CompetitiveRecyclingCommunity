@@ -1,0 +1,64 @@
+body {
+  background: #0b1410;
+  color: white;
+  font-family: sans-serif;
+  padding: 30px;
+}
+
+h1 {
+  font-size: 48px;
+}
+
+.total {
+  font-size: 28px;
+  color: #3ddc84;
+}
+
+.message {
+  background: #13221b;
+  padding: 20px;
+  border-radius: 12px;
+  font-size: 28px;
+  text-align: center;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: #13221b;
+  padding: 20px;
+  margin-top: 15px;
+  border-radius: 12px;
+  font-size: 32px;
+}
+
+.name {
+  width: 100px;
+}
+
+.bar {
+  flex: 1;
+  height: 30px;
+  background: #24352c;
+  border-radius: 15px;
+}
+
+.fill {
+  width: 0%;
+  height: 100%;
+  background: #3ddc84;
+  border-radius: 15px;
+  transition: width 0.5s;
+}
+
+.count {
+  width: 80px;
+  text-align: right;
+}
+
+nav a {
+  color: #3ddc84;
+  font-size: 22px;
+  margin-right: 20px;
+}
