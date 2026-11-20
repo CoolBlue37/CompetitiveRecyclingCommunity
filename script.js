@@ -1,6 +1,7 @@
 let correct = { 9: 0, 10: 0, 11: 0, 12: 0 };
 let total = { 9: 0, 10: 0, 11: 0, 12: 0 };
 let grades = [9, 10, 11, 12];
+let category = "";
 
 function percent(grade) {
   if (total[grade] === 0) {
@@ -15,10 +16,13 @@ function recordResult(grade, wasCorrect) {
     correct[grade] = correct[grade] + 1;
   }
 
-  let allItems = 0;
-  for (let g of grades) {
-    allItems = allItems + total[g];
+  if (category !== "") {
+    let box = document.getElementById(grade + "-" + category);
+    box.textContent = Number(box.textContent) + 1;
+    category = "";
   }
+
+  let allItems = total[9] + total[10] + total[11] + total[12];
   document.getElementById("total").textContent = allItems;
 
   if (wasCorrect) {
@@ -52,21 +56,20 @@ function recordResult(grade, wasCorrect) {
 
 function sortBoard() {
   let board = document.getElementById("board");
-  grades.sort((a, b) => {
-    if (percent(b) !== percent(a)) {
-      return percent(b) - percent(a);
-    }
-    return total[b] - total[a];
-  });
-
+  grades.sort((a, b) => percent(b) - percent(a));
   for (let g of grades) {
     board.appendChild(document.getElementById("grade-" + g));
   }
 }
 
-//   1 2 3 4 = 9th 10th 11th 12th sorted CORRECTLY
-//   q w e r = 9th 10th 11th 12th sorted WRONG
 document.addEventListener("keydown", (event) => {
+  if (event.key === "a") category = "organic";
+  if (event.key === "s") category = "miscellaneous";
+  if (event.key === "d") category = "paper";
+  if (event.key === "f") category = "cardboard";
+  if (event.key === "g") category = "plastic";
+  if (event.key === "h") category = "metal";
+
   if (event.key === "1") recordResult(9, true);
   if (event.key === "2") recordResult(10, true);
   if (event.key === "3") recordResult(11, true);
