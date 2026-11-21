@@ -1,13 +1,17 @@
+from gpiozero import AngularServo, Device, LED, Button
+from gpiozero.pins.pigpio import PiGPIOFactory
 import subprocess
 import threading
 import time
 from time import sleep
-from gpiozero import AngularServo, LED, Button
 import numpy as np
 from signal import pause
+from postData import post
 
 import cv2
 from ultralytics import YOLO
+
+Device.pin_factory = PiGPIOFactory()
 
 model = YOLO("/home/tanush/yolo/best_ncnn_model", task="classify")
 IMGSZ = 224
@@ -94,7 +98,7 @@ LGr = LED(23)
 LRe = LED(24)
 
 servo = AngularServo(18, min_angle=-90, max_angle=90)
-servo.angle = 0
+servo.angle = 20
 sleep(1)
 
 recycle = False
@@ -114,9 +118,11 @@ def setTrash():
     print("Trashing")
 
 
-def APIstuff(gr):
-    pass
+def APIstuff(gr, mat, succ):
+    post(gr, mat, succ)
 
+
+classes=["Cardboard", "Glass", "Metal", "Organic", "Paper", "Plastic", "Trash"]
 
 def run(gr):
     print("Grade:", gr)
@@ -148,12 +154,15 @@ def run(gr):
 
         mean = np.mean(all_probs, axis=0)
         idx = int(mean.argmax())
+        print(classes[idx])
         trueRecycle = idx in toRecycle
 
+        APIStuff(gr+9, classes[idx], trueRecycle == recycle)
+
         (LGr if trueRecycle == recycle else LRe).on()
-        servo.angle = 90 if trueRecycle else -90
+        servo.angle = -35 if trueRecycle else 75
         sleep(4)
-        servo.angle = 0
+        servo.angle = 20
         sleep(1)
         LGr.off()
         LRe.off()
