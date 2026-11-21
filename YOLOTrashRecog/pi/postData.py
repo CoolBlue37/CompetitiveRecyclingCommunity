@@ -1,7 +1,7 @@
 import os
 from supabase import create_client, Client
-url: str = os.environ.get("SUPABASE_URL")
-key: str = os.environ.get("SUPABASE_KEY")
+url: str = os.environ.get("https://zydpwkgiuhkwrqxokatb.supabase.co")
+key: str = os.environ.get("sb_publishable_Y9QENj5oiW1h7fIl67S14A_zRNV90Ot")
 supabase: Client = create_client(url, key)
 
 def post(gr, material, success):
