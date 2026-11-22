@@ -7,7 +7,7 @@ if (error) {
   console.log(data)
 }
 
-const { lastEntry, error } = await supabase
+const { data: lastEntry, error: lastError } = await supabase
   .from('posts')
   .select('success, grade')
   .order('created_at', { ascending: false })
@@ -26,7 +26,7 @@ else {
 let correct = { 9: data[0].success, 10: data[1].success, 11: data[2].success, 12: data[3].success };
 let total = { 9: data[0].total_trash, 10: data[1].total_trash, 11: data[2].total_trash, 12: data[3].total_trash };
 let grades = [9, 10, 11, 12];
-let categories = ["cardboard", "glass", "metal", "miscellaneous", "organic", "paper", "plastic"];
+let categories = ["cardboard", "glass", "metal", "misc", "organic", "paper", "plastic"];
 
 function render(data) {
   
@@ -38,9 +38,9 @@ function render(data) {
     row.querySelector(".count").textContent = percent(g) + "%";
     row.querySelector(".detail").textContent = correct[g] + "/" + total[g];
     row.querySelector(".fill").style.width = percent(g) + "%";
-    for (const [i, c] of categories.entries()) {
+    for (let c of categories) {
       let box = document.getElementById(g + "-" + c);
-      box.textContent = data[g-9][i];
+      box.textContent = data[g-9][c];
     }
   }
 
@@ -63,6 +63,8 @@ function percent(grade) {
   }
   return Math.round((correct[grade] / total[grade]) * 100);
 }
+
+render();
 
 // function recordResult(grade, wasCorrect) {
 //   total[grade] = total[grade] + 1;
