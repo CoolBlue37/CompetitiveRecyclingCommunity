@@ -14,8 +14,8 @@ const { data: lastEntry, error: lastError } = await supabase
   .limit(1)
   .maybeSingle()
 
-if (error) {
-  console.error(error)
+if (lastError) {
+  console.error(lastError)
 } else if (!lastEntry) {
   console.log("No entries yet")
 }
