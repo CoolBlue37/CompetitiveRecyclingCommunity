@@ -11,7 +11,7 @@ def post(gr, material, success):
   try:
     response = (
         supabase.table("posts")
-        .upsert({"Grade": gr, "Material": material, "Success": success, "is_published": True})
+        .upsert({"grade": gr, "material": material, "success": success, "is_published": True})
         .execute()
     )
     print("Publish Success")
