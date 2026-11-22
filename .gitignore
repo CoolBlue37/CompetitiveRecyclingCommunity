@@ -1,4 +1,4 @@
-venv/
+.venv/
 data_all/
 data/
 RealWaste/
