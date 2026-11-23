@@ -9,7 +9,7 @@ if (error) {
 
 const { data: lastEntry, error: lastError } = await supabase
   .from('posts')
-  .select('success, grade')
+  .select('successes, grade')
   .order('created_at', { ascending: false })
   .limit(1)
   .maybeSingle()
@@ -20,10 +20,10 @@ if (lastError) {
   console.log("No entries yet")
 }
 else {
-  console.log(lastEntry.success, lastEntry.grade)
+  console.log(lastEntry.successes, lastEntry.grade)
 }
 
-let correct = { 9: data[0].success, 10: data[1].success, 11: data[2].success, 12: data[3].success };
+let correct = { 9: data[0].successes, 10: data[1].successes, 11: data[2].successes, 12: data[3].successes };
 let total = { 9: data[0].total_trash, 10: data[1].total_trash, 11: data[2].total_trash, 12: data[3].total_trash };
 let grades = [9, 10, 11, 12];
 let categories = ["cardboard", "glass", "metal", "misc", "organic", "paper", "plastic"];
@@ -45,7 +45,7 @@ function render(data) {
   }
 
   if (lastEntry) {
-    if (lastEntry.success) {
+    if (lastEntry.successes) {
       document.getElementById("message").textContent =
         "Nice sorting, " + lastEntry.grade + "th grade!";
     } else {
