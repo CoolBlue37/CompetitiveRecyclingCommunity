@@ -1,5 +1,7 @@
 import { supabase } from './supabaseClient.js'
 
+let totel = {}
+let correct = {}
 let grades = [9, 10, 11, 12];
 let categories = ["cardboard", "glass", "metal", "misc", "organic", "paper", "plastic"];
 
@@ -24,14 +26,14 @@ function render(data, lastEntry) {
   let allItems = total[9] + total[10] + total[11] + total[12];
   document.getElementById("total").textContent = allItems;
   
-  for (let g of grades) {
+  for (let g = 0; g < 4; g++) {
     let row = document.getElementById("grade-" + g);
-    row.querySelector(".count").textContent = percent(g, total, correct) + "%";
+    row.querySelector(".count").textContent = percent(g) + "%";
     row.querySelector(".detail").textContent = correct[g] + "/" + total[g];
-    row.querySelector(".fill").style.width = percent(g, total, correct) + "%";
+    row.querySelector(".fill").style.width = percent(g) + "%";
     for (let c of categories) {
-      let box = document.getElementById(g + "-" + c);
-      box.textContent = data[g-9][c];
+      let box = document.getElementById(String(g+9) + "-" + c);
+      box.textContent = data[g][c];
     }
   }
 
@@ -48,7 +50,7 @@ function render(data, lastEntry) {
   sortBoard();
 }
 
-function percent(grade, total, correct) {
+function percent(grade) {
   if (total[grade] === 0) {
     return 0;
   }
