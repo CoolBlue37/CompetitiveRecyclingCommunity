@@ -1,27 +1,5 @@
 import { supabase } from './supabaseClient.js'
 
-// const { data, error } = await supabase.rpc('get_stats');
-// if (error) {
-//   console.error(error)
-// } else {
-//   console.log(data)
-// }
-
-// const { data: lastEntry, error: lastError } = await supabase
-//   .from('posts')
-//   .select('successes, grade')
-//   .order('created_at', { ascending: false })
-//   .limit(1)
-//   .maybeSingle()
-
-// if (lastError) {
-//   console.error(lastError)
-// } else if (!lastEntry) {
-//   console.log("No entries yet")
-// }
-// else {
-//   console.log(lastEntry.successes, lastEntry.grade)
-// }
 let grades = [9, 10, 11, 12];
 let categories = ["cardboard", "glass", "metal", "misc", "organic", "paper", "plastic"];
 
@@ -58,7 +36,7 @@ function render(data, lastEntry) {
   }
 
   if (lastEntry) {
-    if (lastEntry.successes) {
+    if (lastEntry.success) {
       document.getElementById("message").textContent =
         "Nice sorting, " + lastEntry.grade + "th grade!";
     } else {
