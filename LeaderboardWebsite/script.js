@@ -89,7 +89,7 @@ render();
 //       "Oops, wrong bin, " + grade + "th grade!";
 //   }
 
-  // for (let g of grades) {
+// for (let g of grades) {
 //     let row = document.getElementById("grade-" + g);
 //     row.querySelector(".count").textContent = percent(g) + "%";
 //     row.querySelector(".detail").textContent = correct[g] + "/" + total[g];
