@@ -1,6 +1,6 @@
 import { supabase } from './supabaseClient.js'
 
-let totel = {}
+let total = {}
 let correct = {}
 let grades = [9, 10, 11, 12];
 let categories = ["cardboard", "glass", "metal", "misc", "organic", "paper", "plastic"];
@@ -21,19 +21,19 @@ async function refresh() {
 }
 
 function render(data, lastEntry) {
-  let total = { 9: data[0].total_trash, 10: data[1].total_trash, 11: data[2].total_trash, 12: data[3].total_trash };
-  let correct = { 9: data[0].successes, 10: data[1].successes, 11: data[2].successes, 12: data[3].successes };
+  total = { 9: data[0].total_trash, 10: data[1].total_trash, 11: data[2].total_trash, 12: data[3].total_trash };
+  correct = { 9: data[0].successes, 10: data[1].successes, 11: data[2].successes, 12: data[3].successes };
   let allItems = total[9] + total[10] + total[11] + total[12];
   document.getElementById("total").textContent = allItems;
   
-  for (let g = 0; g < 4; g++) {
+  for (let g of grades) {
     let row = document.getElementById("grade-" + g);
     row.querySelector(".count").textContent = percent(g) + "%";
     row.querySelector(".detail").textContent = correct[g] + "/" + total[g];
     row.querySelector(".fill").style.width = percent(g) + "%";
     for (let c of categories) {
-      let box = document.getElementById(String(g+9) + "-" + c);
-      box.textContent = data[g][c];
+      let box = document.getElementById(g + "-" + c);
+      box.textContent = data[g-9][c];
     }
   }
 
