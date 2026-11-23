@@ -9,7 +9,7 @@ async function refresh() {
 
   const { data: lastEntry, error: lastError } = await supabase
     .from('posts')
-    .select('successes, grade')
+    .select('success, grade')
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle()
