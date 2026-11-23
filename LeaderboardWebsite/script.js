@@ -1,35 +1,48 @@
 import { supabase } from './supabaseClient.js'
 
-const { data, error } = await supabase.rpc('get_stats');
-if (error) {
-  console.error(error)
-} else {
-  console.log(data)
-}
+// const { data, error } = await supabase.rpc('get_stats');
+// if (error) {
+//   console.error(error)
+// } else {
+//   console.log(data)
+// }
 
-const { data: lastEntry, error: lastError } = await supabase
-  .from('posts')
-  .select('successes, grade')
-  .order('created_at', { ascending: false })
-  .limit(1)
-  .maybeSingle()
+// const { data: lastEntry, error: lastError } = await supabase
+//   .from('posts')
+//   .select('successes, grade')
+//   .order('created_at', { ascending: false })
+//   .limit(1)
+//   .maybeSingle()
 
-if (lastError) {
-  console.error(lastError)
-} else if (!lastEntry) {
-  console.log("No entries yet")
-}
-else {
-  console.log(lastEntry.successes, lastEntry.grade)
-}
-
-let correct = { 9: data[0].successes, 10: data[1].successes, 11: data[2].successes, 12: data[3].successes };
-let total = { 9: data[0].total_trash, 10: data[1].total_trash, 11: data[2].total_trash, 12: data[3].total_trash };
+// if (lastError) {
+//   console.error(lastError)
+// } else if (!lastEntry) {
+//   console.log("No entries yet")
+// }
+// else {
+//   console.log(lastEntry.successes, lastEntry.grade)
+// }
 let grades = [9, 10, 11, 12];
 let categories = ["cardboard", "glass", "metal", "misc", "organic", "paper", "plastic"];
 
-function render(data, lastEntry) {
+async function refresh() {
+  const { data, error } = await supabase.rpc('get_stats');
+  if (error) return console.error(error);
+
+  const { data: lastEntry, error: lastError } = await supabase
+    .from('posts')
+    .select('successes, grade')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  if (lastError) return console.error(error);
   
+  render(data, lastEntry);
+}
+
+function render(data, lastEntry) {
+  let total = { 9: data[0].total_trash, 10: data[1].total_trash, 11: data[2].total_trash, 12: data[3].total_trash };
+  let correct = { 9: data[0].successes, 10: data[1].successes, 11: data[2].successes, 12: data[3].successes };
   let allItems = total[9] + total[10] + total[11] + total[12];
   document.getElementById("total").textContent = allItems;
   
@@ -64,52 +77,6 @@ function percent(grade) {
   return Math.round((correct[grade] / total[grade]) * 100);
 }
 
-render(data, lastEntry);
-
-// function recordResult(grade, wasCorrect) {
-//   total[grade] = total[grade] + 1;
-//   if (wasCorrect) {
-//     correct[grade] = correct[grade] + 1;
-//   }
-
-//   if (category !== "") {
-//     let box = document.getElementById(grade + "-" + category);
-//     box.textContent = Number(box.textContent) + 1;
-//     category = "";
-//   }
-
-//   let allItems = total[9] + total[10] + total[11] + total[12];
-//   document.getElementById("total").textContent = allItems;
-
-//   if (wasCorrect) {
-//     document.getElementById("message").textContent =
-//       "Nice sorting, " + grade + "th grade!";
-//   } else {
-//     document.getElementById("message").textContent =
-//       "Oops, wrong bin, " + grade + "th grade!";
-//   }
-
-// for (let g of grades) {
-//     let row = document.getElementById("grade-" + g);
-//     row.querySelector(".count").textContent = percent(g) + "%";
-//     row.querySelector(".detail").textContent = correct[g] + "/" + total[g];
-//     row.querySelector(".fill").style.width = percent(g) + "%";
-//   }
-
-//   sortBoard();
-
-//   let row = document.getElementById("grade-" + grade);
-//   if (wasCorrect) {
-//     row.classList.add("pop");
-//   } else {
-//     row.classList.add("wrong");
-//   }
-//   setTimeout(() => {
-//     row.classList.remove("pop");
-//     row.classList.remove("wrong");
-//   }, 300);
-// }
-
 function sortBoard() {
   let board = document.getElementById("board");
   grades.sort((a, b) => percent(b) - percent(a));
@@ -118,20 +85,15 @@ function sortBoard() {
   }
 }
 
-// document.addEventListener("keydown", (event) => {
-//   if (event.key === "a") category = "organic";
-//   if (event.key === "s") category = "miscellaneous";
-//   if (event.key === "d") category = "paper";
-//   if (event.key === "f") category = "cardboard";
-//   if (event.key === "g") category = "plastic";
-//   if (event.key === "h") category = "metal";
+await refresh();
 
-//   if (event.key === "1") recordResult(9, true);
-//   if (event.key === "2") recordResult(10, true);
-//   if (event.key === "3") recordResult(11, true);
-//   if (event.key === "4") recordResult(12, true);
-//   if (event.key === "q") recordResult(9, false);
-//   if (event.key === "w") recordResult(10, false);
-//   if (event.key === "e") recordResult(11, false);
-//   if (event.key === "r") recordResult(12, false);
-// });
+supabase
+  .channel('posts-changes')
+  .on(
+    'postgres_changes',
+    { event: 'INSERT', schema: 'public', table: 'posts' },
+    (payload) => {
+      refresh();
+    }
+  )
+  .subscribe();
