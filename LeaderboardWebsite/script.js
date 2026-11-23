@@ -28,7 +28,7 @@ let total = { 9: data[0].total_trash, 10: data[1].total_trash, 11: data[2].total
 let grades = [9, 10, 11, 12];
 let categories = ["cardboard", "glass", "metal", "misc", "organic", "paper", "plastic"];
 
-function render(data) {
+function render(data, lastEntry) {
   
   let allItems = total[9] + total[10] + total[11] + total[12];
   document.getElementById("total").textContent = allItems;
@@ -64,7 +64,7 @@ function percent(grade) {
   return Math.round((correct[grade] / total[grade]) * 100);
 }
 
-render();
+render(data, lastEntry);
 
 // function recordResult(grade, wasCorrect) {
 //   total[grade] = total[grade] + 1;
