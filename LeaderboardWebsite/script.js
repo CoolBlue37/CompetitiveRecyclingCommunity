@@ -59,8 +59,8 @@ function percent(grade) {
 
 function sortBoard() {
   let board = document.getElementById("board");
-  grades.sort((a, b) => percent(b) - percent(a));
-  for (let g of grades) {
+  const sorted = [...grades].sort((a, b) => percent(b) - percent(a));
+  for (let g of sorted) {
     board.appendChild(document.getElementById("grade-" + g));
   }
 }
