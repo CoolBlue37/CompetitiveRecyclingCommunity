@@ -13,7 +13,7 @@ async function refresh() {
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle()
-  if (lastError) return console.error(error);
+  if (lastError) return console.error(lastError);
   
   render(data, lastEntry);
 }
@@ -26,9 +26,9 @@ function render(data, lastEntry) {
   
   for (let g of grades) {
     let row = document.getElementById("grade-" + g);
-    row.querySelector(".count").textContent = percent(g) + "%";
+    row.querySelector(".count").textContent = percent(g, total, correct) + "%";
     row.querySelector(".detail").textContent = correct[g] + "/" + total[g];
-    row.querySelector(".fill").style.width = percent(g) + "%";
+    row.querySelector(".fill").style.width = percent(g, total, correct) + "%";
     for (let c of categories) {
       let box = document.getElementById(g + "-" + c);
       box.textContent = data[g-9][c];
@@ -48,7 +48,7 @@ function render(data, lastEntry) {
   sortBoard();
 }
 
-function percent(grade) {
+function percent(grade, total, correct) {
   if (total[grade] === 0) {
     return 0;
   }
