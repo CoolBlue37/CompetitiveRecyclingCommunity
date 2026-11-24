@@ -85,3 +85,4 @@ supabase
     }
   )
   .subscribe();
+setInterval(refresh, 60000);
