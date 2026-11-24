@@ -38,6 +38,7 @@ function render(data, lastEntry) {
   }
 
   if (lastEntry) {
+    flash(lastEntry.grade, lastEntry.success);
     if (lastEntry.success) {
       document.getElementById("message").textContent =
         "Nice sorting, " + lastEntry.grade + "th grade!";
@@ -63,6 +64,13 @@ function sortBoard() {
   for (let g of sorted) {
     board.appendChild(document.getElementById("grade-" + g));
   }
+}
+
+function flash(grade, success) {
+  const row = document.getElementById("grade-" + grade);
+  const cls = success ? "pop" : "wrong";
+  row.classList.add(cls);
+  setTimeout(() => row.classList.remove(cls), 800);
 }
 
 await refresh();
