@@ -113,7 +113,7 @@ nav a {
 .icon{
   width: 75px;
   height: 75px;
-  position: fixed;
+  position: absolute;
   top: 30px;
   right: 30px;
 }
