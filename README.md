@@ -18,9 +18,10 @@ Our idea was to make recycling a competition between the grades. We made a smart
 1. Put something in the bin
 2. Predict where the trash will go using the recycle and trash buttons
 3. Press your grade button (Don't lie)
-4. The bin checks if you put it in the right place
-5. The AI figures out what the item is (cardboard, glass, metal, organic, paper, plastic, or misc)
-6. Your grade's score goes up or down on the website
+4. The AI figures out what the item is (cardboard, glass, metal, organic, paper, plastic, or misc)
+5. The platform tips the trash into the right section
+6. An LED indicates if you predicted where the trash went successfully
+7. Your grade's score goes up or down on the website
 
 Your score is the percent of stuff your grade sorted correctly. So if you put things in the wrong bin your score goes down, which means you can't just throw random stuff in to win.
 
