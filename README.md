@@ -1,4 +1,4 @@
- Competitive Recycling Community
+# Competitive Recycling Community
 
 Website: https://crcleaderboard.vercel.app/
 
@@ -11,7 +11,7 @@ At SAS a lot of people don't recycle, or they put their trash in the wrong bin. 
 Our idea was to make recycling a competition between the grades. We made a smart bin that uses AI to tell what kind of trash you put in it, and then your grade gets points on a leaderboard.
 
 ## Preview
-[Preview of Website Leaderboard](Assets/Preview.png)
+![Preview of Website Leaderboard](Assets/Preview.png)
 
 ## How to use it
 
@@ -48,7 +48,7 @@ Your score is the percent of stuff your grade sorted correctly. So if you put th
 - Servo - To pivot the holding platform and dump trash
 
 ### Diagram:
-[Circuit Diagram](Assets/Schematic.png)
+![Circuit Diagram](Assets/Schematic.png)
 
 ## Libraries
 
