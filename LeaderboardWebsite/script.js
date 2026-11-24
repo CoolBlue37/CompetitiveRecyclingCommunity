@@ -59,10 +59,17 @@ function percent(grade) {
 }
 
 function sortBoard() {
-  let board = document.getElementById("board");
+  const board = document.getElementById("board");
+  const rows = grades.map(g => document.getElementById("grade-" + g));
+  const before = new Map(rows.map(r => [r, r.getBoundingClientRect().top]));
+
   const sorted = [...grades].sort((a, b) => percent(b) - percent(a) || total[b] - total[a]);
-  for (let g of sorted) {
-    board.appendChild(document.getElementById("grade-" + g));
+  for (const g of sorted) board.appendChild(document.getElementById("grade-" + g));
+
+  for (const r of rows) {
+    const dy = before.get(r) - r.getBoundingClientRect().top;
+    if (dy) r.animate([{ transform: `translateY(${dy}px)` }, { transform: "none" }],
+                      { duration: 500, easing: "ease-out" });
   }
 }
 
