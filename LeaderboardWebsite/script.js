@@ -59,7 +59,7 @@ function percent(grade) {
 
 function sortBoard() {
   let board = document.getElementById("board");
-  const sorted = [...grades].sort((a, b) => percent(b) - percent(a));
+  const sorted = [...grades].sort((a, b) => percent(b) - percent(a) || total[b] - total[a]);
   for (let g of sorted) {
     board.appendChild(document.getElementById("grade-" + g));
   }
