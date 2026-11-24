@@ -28,7 +28,7 @@ function render(data, lastEntry, animate) {
   
   for (let g of grades) {
     let row = document.getElementById("grade-" + g);
-    row.querySelector(".count").textContent = percent(g) + "%";
+    countUp(row.querySelector(".count"), percent(g));
     row.querySelector(".detail").textContent = correct[g] + "/" + total[g];
     row.querySelector(".fill").style.width = percent(g) + "%";
     for (let c of categories) {
@@ -81,12 +81,13 @@ function flash(grade, success) {
 }
 
 function countUp(el, to) {
-  const from = Number(el.textContent) || 0;
+  const from = parseInt(el.textContent) || 0;
+  const suffix = el.classList.contains("count") ? "%" : "";
   if (from === to) return;
   const start = performance.now();
   function step(now) {
     const t = Math.min((now - start) / 600, 1);
-    el.textContent = Math.round(from + (to - from) * t);
+    el.textContent = Math.round(from + (to - from) * t) + suffix;
     if (t < 1) requestAnimationFrame(step);
   }
   requestAnimationFrame(step);
