@@ -2,30 +2,20 @@ from pathlib import Path
 from collections import Counter, defaultdict
 from ultralytics import YOLO
 
-WEIGHTS = "runs/classify/train-6/weights/best.pt"   # your trained weights
-TEST_DIR = Path("trashnet")                       # folder with cardboard/, glass/, metal/, paper/, plastic/, trash/
+WEIGHTS = "runs/classify/train-6/weights/best.pt"  
+TEST_DIR = Path("trashnet")                      
 
 def norm(s):
     return s.lower().replace(" ", "").replace("_", "")
 
-# TrashNet folder -> model class name(s) that count as correct (compared after norm())
 CORRECT = {
     "cardboard": {"cardboard"},
     "glass":     {"glass"},
     "metal":     {"metal"},
     "paper":     {"paper"},
     "plastic":   {"plastic"},
-    "trash":     {"miscellaneoustrash"},   # adjust to match your class names
+    "trash":     {"miscellaneoustrash"},  
 }
-# CORRECT = {
-#     "cardboard": {"Cardboard"},
-#     "glass":     {"Glass"},
-#     "metal":     {"Metal"},
-#     "paper":     {"Paper"},
-#     "plastic":   {"Plastic"},
-#     "trash":     {"Textile Trash", "Miscellaneous Trash"},
-#     "organic":   {"Food Organics, Vegetation"},
-# }
 
 def main():
     model = YOLO(WEIGHTS)

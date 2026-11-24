@@ -5,7 +5,6 @@ import splitfolders
 random.seed(42)
 OUT, CAP = Path("data_all"), 1000
 
-# (source folder, your class, max images from this source)
 SOURCES = [
     ("RealWaste/Cardboard", "cardboard", 400), ("RealWaste/Glass", "glass", 400),
     ("RealWaste/Metal", "metal", 400),         ("RealWaste/Paper", "paper", 400),
@@ -14,7 +13,6 @@ SOURCES = [
     ("RealWaste/Textile Trash", "trash", 400),
     ("RealWaste/Food Organics", "organic", 400),
     ("RealWaste/Vegetation", "organic", 400)
-    # ("mine/empty", "empty", 100),   # your own photos: add these per class too
 ]
 
 by_class = {}
