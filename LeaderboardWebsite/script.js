@@ -81,8 +81,8 @@ supabase
     'postgres_changes',
     { event: 'INSERT', schema: 'public', table: 'posts' },
     (payload) => {
-      refresh();
+      refresh(true);
     }
   )
   .subscribe();
-setInterval(refresh, 60000);
+setInterval(() => refresh(), 60000);
