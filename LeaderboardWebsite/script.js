@@ -24,7 +24,7 @@ function render(data, lastEntry, animate) {
   total = { 9: data[0].total_trash, 10: data[1].total_trash, 11: data[2].total_trash, 12: data[3].total_trash };
   correct = { 9: data[0].successes, 10: data[1].successes, 11: data[2].successes, 12: data[3].successes };
   let allItems = total[9] + total[10] + total[11] + total[12];
-  document.getElementById("total").textContent = allItems;
+  countUp(document.getElementById("total"), allItems);
   
   for (let g of grades) {
     let row = document.getElementById("grade-" + g);
@@ -71,6 +71,18 @@ function flash(grade, success) {
   const cls = success ? "pop" : "wrong";
   row.classList.add(cls);
   setTimeout(() => row.classList.remove(cls), 800);
+}
+
+function countUp(el, to) {
+  const from = Number(el.textContent) || 0;
+  if (from === to) return;
+  const start = performance.now();
+  function step(now) {
+    const t = Math.min((now - start) / 600, 1);
+    el.textContent = Math.round(from + (to - from) * t);
+    if (t < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
 }
 
 await refresh();
