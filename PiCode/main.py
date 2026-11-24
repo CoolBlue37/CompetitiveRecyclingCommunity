@@ -157,7 +157,7 @@ def run(gr):
         print(classes[idx])
         trueRecycle = idx in toRecycle
 
-        APIStuff(gr+9, classes[idx], trueRecycle == recycle)
+        APIstuff(gr+9, classes[idx], trueRecycle == recycle)
 
         (LGr if trueRecycle == recycle else LRe).on()
         servo.angle = -35 if trueRecycle else 75
