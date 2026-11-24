@@ -109,3 +109,11 @@ nav a {
 .count, .detail, .cat span { 
   font-variant-numeric: tabular-nums; 
 }
+
+.icon{
+  width: 75px;
+  height: 75px;
+  position: fixed;
+  top: 30px;
+  right: 30px;
+}
