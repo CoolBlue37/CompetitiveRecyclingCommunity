@@ -5,7 +5,7 @@ let correct = {}
 let grades = [9, 10, 11, 12];
 let categories = ["cardboard", "glass", "metal", "misc", "organic", "paper", "plastic"];
 
-async function refresh() {
+async function refresh(animate=false) {
   const { data, error } = await supabase.rpc('get_stats');
   if (error) return console.error(error);
 
@@ -17,10 +17,10 @@ async function refresh() {
     .maybeSingle()
   if (lastError) return console.error(lastError);
   
-  render(data, lastEntry);
+  render(data, lastEntry, animate);
 }
 
-function render(data, lastEntry) {
+function render(data, lastEntry, animate) {
   total = { 9: data[0].total_trash, 10: data[1].total_trash, 11: data[2].total_trash, 12: data[3].total_trash };
   correct = { 9: data[0].successes, 10: data[1].successes, 11: data[2].successes, 12: data[3].successes };
   let allItems = total[9] + total[10] + total[11] + total[12];
@@ -38,7 +38,7 @@ function render(data, lastEntry) {
   }
 
   if (lastEntry) {
-    flash(lastEntry.grade, lastEntry.success);
+    if (animate) flash(lastEntry.grade, lastEntry.success);
     if (lastEntry.success) {
       document.getElementById("message").textContent =
         "Nice sorting, " + lastEntry.grade + "th grade!";
