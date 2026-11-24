@@ -100,3 +100,7 @@ nav a {
 #board .row:first-child { 
   outline: 2px solid #3ddc84; 
 }
+
+.count, .detail, .cat span { 
+  font-variant-numeric: tabular-nums; 
+}
